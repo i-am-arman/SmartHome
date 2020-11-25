@@ -1,0 +1,55 @@
+﻿@model SmartHome.Device
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Device</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.DeviceName)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.DeviceName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.DeviceType)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.DeviceType.TypeName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.AddedBy)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.AddedBy.UserName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Images)
+        </dt>
+        <dd>
+            @foreach (KeyValuePair<int, string> img in ViewBag.Thumbs)
+            {
+                <div class="img-thumbnail">
+                    <a asp-action="ViewImage" asp-route-id="@img.Key" title="Click to view at full size"><img src="@img.Value" /></a>
+                    <br /><a asp-action="DeleteImage" asp-route-id="@img.Key">Delete</a>
+                </div>
+            }
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.DeviceId">Edit</a> |
+    <a asp-action="AddImage" asp-route-id="@Model.DeviceId">Add Image</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

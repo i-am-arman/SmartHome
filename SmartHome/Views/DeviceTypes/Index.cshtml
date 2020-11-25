@@ -1,0 +1,37 @@
+﻿@model IEnumerable<SmartHome.DeviceType>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>Device Types</h2>
+
+<p>This is a list of the various device types in your smart home. It comes pre-populated
+    with a number of types, but feel free to add, remove, or otherwise modify this list
+    to better fit your own smart home.</p>
+
+<p>
+    <a asp-action="Create">Create New</a> |
+    <a href="/Home/">Return Home</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Device Types</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.TypeName)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.TypeId">Edit</a> |
+                <a asp-action="Delete" asp-route-id="@item.TypeId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

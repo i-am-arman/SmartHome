@@ -1,0 +1,100 @@
+﻿@using  SmartHome.Classes
+@model Pagination<Device>
+
+@{
+    ViewData["Title"] = "Your Devices";
+}
+
+<h2>Your Devices</h2>
+
+<p>Keep track of your devices below!</p>
+<p><a asp-action="Create">Add Device</a></p>
+<form asp-action="Index" method="get">
+    <div class="form-actions no-color">
+        <p>
+            Search here: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
+            <input type="submit" value="Go!" class="btn btn-default" /> |
+            <a asp-action="Index">Clear Search</a>
+        </p>
+    </div>
+</form>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["NameSort"]">
+                    @Html.DisplayNameFor(model => model.FirstOrDefault().DeviceName)
+                </a>
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FirstOrDefault().Description)
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["TypeSort"]">
+                    @Html.DisplayNameFor(model => model.FirstOrDefault().DeviceType)
+                </a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["UserSort"]">
+                    @Html.DisplayNameFor(model => model.FirstOrDefault().AddedBy)
+                </a>
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.DeviceName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DeviceType.TypeName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AddedBy.UserName)
+            </td>
+            <td>
+                <div>
+                    @foreach (var img in item.Images)
+                    {
+                        <a asp-action="ViewImage" asp-route-id="@img.ImageId" class="img-thumbnail img-responsive" style="float:left" title="Click to view at full size">
+                            <img src="@img.ThumbString" />
+                        </a>
+                    }
+                </div>
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.DeviceId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.DeviceId">Details</a> |
+                <a asp-action="AddImage" asp-route-id="@item.DeviceId">Add Images</a> |
+                <a asp-action="Delete" asp-route-id="@item.DeviceId">Delete</a>
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+
+@{
+    var prevDisabled = !Model.HasPrevious ? "disabled" : "";
+    var nextDisabled = !Model.HasNext ? "disabled" : "";
+}
+
+<a asp-action="Index"
+   asp-route-sortOrder="@ViewData["CurrentSort"]"
+   asp-route-pageNumber="@(Model.Index - 1)"
+   asp-route-currentFilter="@ViewData["CurrentFilter"]"
+   class="btn btn-default @prevDisabled">
+    Previous
+</a>
+<a asp-action="Index"
+   asp-route-sortOrder="@ViewData["CurrentSort"]"
+   asp-route-pageNumber="@(Model.Index + 1)"
+   asp-route-currentFilter="@ViewData["CurrentFilter"]"
+   class="btn btn-default @nextDisabled">
+    Next
+</a>

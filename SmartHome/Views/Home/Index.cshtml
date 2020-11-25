@@ -1,0 +1,38 @@
+﻿@using Microsoft.AspNetCore.Identity
+
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<h1>Welcome to Your Smart Home Device Database</h1>
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <div class="row">
+        <div class="col-md-7">
+            <h2>Your Devices</h2>
+            <p>Your smart home is (hopefully!) filled with all manner of devices, large and
+            small. It can be a little daunting to remember just what you've installed. But
+            if your house is smart, why not your installation list, as well?</p>
+            <p><a href="/Devices/">View your devices</a></p>
+        </div>
+        <div class="col-md-3">
+            <h2>Modify Your Data</h2>
+            <p>All data is rarely created equal, so why think your house is any different?
+            Go ahead and <a href="/DeviceTypes/">modify the types of devices</a> that live
+            in your smart house!</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-7">
+            <h2>Login To Access The App!</h2>
+            <p>Click the Register link to register as a new user, or click the Login link to
+            log into the system with an existing user.</p>
+        </div>
+    </div>
+}

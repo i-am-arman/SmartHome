@@ -1,0 +1,22 @@
+﻿@model DeviceImage
+@{
+    ViewData["Title"] = "ViewImage";
+}
+
+<h2>ViewImage</h2>
+
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>Filename</dt>
+        <dd>@Html.DisplayFor(model => model.Description)</dd>
+        <dt>Content Type</dt>
+        <dd>@Html.DisplayFor(model => model.ContentType)</dd>
+        <dt>Image</dt>
+        <dd></dd>
+    </dl>
+
+    <img src="@Model.ImageString" />
+
+    <a asp-action="Details" asp-route-id="@Model.Device.DeviceId">Back to List</a>
+</div>
