@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace SmartHome.Models
 {
@@ -17,5 +20,28 @@ namespace SmartHome.Models
         public string DeviceTypeTypeId { get; set; }
 
         public string Description { get; set; }
+
+        [AtLeastOne(ErrorMessage = "You must upload an image.")]
+        [Display(Name = "Image")]
+        public List<IFormFile> Files { get; set; }
+    }
+
+    public class AtLeastOne : ValidationAttribute
+    {
+        private List<string> ContentTypes => new List<string>(new string[]
+        {
+            "image/jpg",
+            "image/jpeg",
+            "image/pjpeg",
+            "image/gif",
+            "image/x-png",
+            "image/png",
+            "image/webp",
+            "image/svg+xml"
+        });
+        public override bool IsValid(object value)
+        {
+            return value is List<IFormFile> list ? list.Count > 0 && list.TrueForAll(x => ContentTypes.Contains(x.ContentType)) : false;
+        }
     }
 }

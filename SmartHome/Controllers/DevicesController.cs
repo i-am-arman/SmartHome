@@ -12,7 +12,6 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Collections.Generic;
 using SmartHome.Classes;
-using System;
 using System.Drawing.Drawing2D;
 
 namespace SmartHome.Controllers
@@ -128,7 +127,7 @@ namespace SmartHome.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("DeviceName,Description,DeviceTypeTypeId")] DevicesViewModel vm)
+        public async Task<IActionResult> Create([Bind("DeviceName,Description,DeviceTypeTypeId,Files")] DevicesViewModel vm)
         {
             if (ModelState.IsValid)
             {
@@ -141,6 +140,27 @@ namespace SmartHome.Controllers
                 };
                 _context.Add(device);
                 await _context.SaveChangesAsync();
+
+                //Convert the list of files into a list of images and thumbnails
+                var lst = MakeImageList(vm.Files, device);
+
+                //Save the image(s) to the database, presuming there's anything to save
+                if (lst.Count > 0)
+                {
+                    await _context.AddRangeAsync(lst);
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    //If there are no attached images (for whatever reason), send it back
+                    ViewBag.DeviceTypes = _context
+                        .DeviceTypes
+                        .Select(x => new SelectListItem(x.TypeName, x.TypeId.ToString()))
+                        .ToList();
+                    
+                    return View();
+                }
+
                 return RedirectToAction(nameof(Index));
             }
             ViewBag.DeviceTypes = _context
@@ -293,12 +313,69 @@ namespace SmartHome.Controllers
             if (id != vm.DeviceId)
                 return NotFound();
 
-            //This list will hold the images being uploaded
-            var lst = new List<DeviceImage>();
+            //Get the device to attach the image to
             var device = await _context.Devices.FindAsync(id);
+            //Convert the list of files into a list of images and thumbnails
+            var lst = MakeImageList(vm.Files, device);
+
+            //Save the image(s) to the database, presuming there's anything to save
+            if (lst.Count > 0)
+            {
+                await _context.AddRangeAsync(lst);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> ViewImage(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var img = await _context.DeviceImages
+                .Include(x => x.Device)
+                .FirstAsync(x => x.ImageId == id);
+            if (img == null)
+                return NotFound();
+            return View(img);
+        }
+
+        // GET: Devices/DeleteImage/5
+        public async Task<IActionResult> DeleteImage(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var img = await _context.DeviceImages.FirstAsync(m => m.ImageId == id);
+            if (img == null)
+                return NotFound();
+
+            return View(img);
+        }
+
+        // POST: Devices/DeleteImage/5
+        [HttpPost, ActionName("DeleteImage")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteImageConfirmed(int id)
+        {
+            var img = await _context
+                .DeviceImages
+                .Include(x => x.Device)
+                .Where(x => x.ImageId == id)
+                .FirstAsync();
+            var DeviceId = img.Device.DeviceId;
+            _context.DeviceImages.Remove(img);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Details",new { id = DeviceId });
+        }
+
+        private List<DeviceImage> MakeImageList(List<IFormFile> files, Device device)
+        {
+            //Create the list
+            var lst = new List<DeviceImage>();
 
             //Loop through every image
-            foreach (IFormFile file in vm.Files)
+            foreach (IFormFile file in files)
             {
                 try
                 {
@@ -363,60 +440,13 @@ namespace SmartHome.Controllers
                         }
                     }
                     lst.Add(img);
-                } catch
+                }
+                catch
                 {
                     //Whatever the issue was, just don't store the image
                 }
             }
-            //Save the image(s) to the database, presuming there's anything to save
-            if (lst.Count > 0)
-            {
-                await _context.AddRangeAsync(lst);
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction(nameof(Index));
-        }
-
-        public async Task<IActionResult> ViewImage(int? id)
-        {
-            if (id == null)
-                return NotFound();
-
-            var img = await _context.DeviceImages
-                .Include(x => x.Device)
-                .FirstAsync(x => x.ImageId == id);
-            if (img == null)
-                return NotFound();
-            return View(img);
-        }
-
-        // GET: Devices/DeleteImage/5
-        public async Task<IActionResult> DeleteImage(int? id)
-        {
-            if (id == null)
-                return NotFound();
-
-            var img = await _context.DeviceImages.FirstAsync(m => m.ImageId == id);
-            if (img == null)
-                return NotFound();
-
-            return View(img);
-        }
-
-        // POST: Devices/DeleteImage/5
-        [HttpPost, ActionName("DeleteImage")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteImageConfirmed(int id)
-        {
-            var img = await _context
-                .DeviceImages
-                .Include(x => x.Device)
-                .Where(x => x.ImageId == id)
-                .FirstAsync();
-            var DeviceId = img.Device.DeviceId;
-            _context.DeviceImages.Remove(img);
-            await _context.SaveChangesAsync();
-            return RedirectToAction("Details",new { id = DeviceId });
+            return lst;
         }
 
         private bool DeviceExists(int id)

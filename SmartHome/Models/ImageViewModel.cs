@@ -11,6 +11,7 @@ namespace SmartHome.Models
     {
         [Required]
         public int DeviceId { get; set; }
+        [Required]
         public List<IFormFile> Files { get; set; }
     }
 }
